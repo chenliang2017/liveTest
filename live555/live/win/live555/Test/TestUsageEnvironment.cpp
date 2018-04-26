@@ -8,23 +8,14 @@
 
 using namespace std;
 
-TaskScheduler* scheduler;
-UsageEnvironment* env;
-
-//#define STDOUT_FILENO fileno(stdout)
-
-#define STDIN_FILENO 0 /* Standard input. */
-#define STDOUT_FILENO 1 /* Standard output. */
-#define STDERR_FILENO 2 /* Standard error output. */
-
-void taskFunc(void* clientData){
+void taskFunc(void* clientData)
+{
 	cout << "taskFunc(\"" << (char*)clientData << "\") called." << endl;
 }
 
-void handlerFunc(void* clientData, int mask){
-	cout << "handlerFunc(\"" << (char*)clientData << "\", " << mask
-		<< ") called." << endl;
-	//scheduler->disableBackgroundHandling(STDOUT_FILENO);
+void handlerFunc(void* clientData, int mask)
+{
+	cout << "handlerFunc(\"" << (char*)clientData << "\", " << mask << ") called." << endl;
 }
 
 #ifdef TEST_USAGE_ENVIRONMENT
@@ -33,11 +24,6 @@ int main(int argc, char* args[])
 {
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
 	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
-
-	// IO event test
-	//char handlerClientData[] = "IO Event";
-	//scheduler->setBackgroundHandling(STDOUT_FILENO, SOCKET_WRITABLE,
-	//	(TaskScheduler::BackgroundHandlerProc*)&handlerFunc, handlerClientData);
 
 	// trigger event test
 	EventTriggerId id1 = scheduler->createEventTrigger(taskFunc);
@@ -54,11 +40,10 @@ int main(int argc, char* args[])
 
 	// delayed task test
 	char delayedTaskClientData1[] = "Delayed Task 1s";
-	TaskToken token1 = scheduler->scheduleDelayedTask(1000000,
-		taskFunc, delayedTaskClientData1);
+	TaskToken token1 = scheduler->scheduleDelayedTask(1000000, taskFunc, delayedTaskClientData1);
+
 	char delayedTaskClientData2[] = "Delayed Task 5s";
-	TaskToken token2 = scheduler->scheduleDelayedTask(5000000,
-		taskFunc, delayedTaskClientData2);
+	TaskToken token2 = scheduler->scheduleDelayedTask(5000000, taskFunc, delayedTaskClientData2);
 
 	// loop
 	scheduler->doEventLoop();
