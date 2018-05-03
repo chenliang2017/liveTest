@@ -21,6 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "DelayQueue.hh"
 #include "GroupsockHelper.hh"
 
+//1s = 1000 * 1000us
 static const int MILLION = 1000000;
 
 ///// Timeval /////
@@ -127,12 +128,12 @@ void DelayQueue::addEntry(DelayQueueEntry* newEntry) {
   synchronize();
 
   DelayQueueEntry* cur = head();
-  while (newEntry->fDeltaTimeRemaining >= cur->fDeltaTimeRemaining) {
-    newEntry->fDeltaTimeRemaining -= cur->fDeltaTimeRemaining;
+  while (newEntry->fDeltaTimeRemaining >= cur->fDeltaTimeRemaining) {	//新加入的超时事件，若超时时间大于已有超时事件的时间
+    newEntry->fDeltaTimeRemaining -= cur->fDeltaTimeRemaining;			//计算新加入超时事件相对于已有超时事件的超时时间
     cur = cur->fNext;
   }
 
-  cur->fDeltaTimeRemaining -= newEntry->fDeltaTimeRemaining;
+  cur->fDeltaTimeRemaining -= newEntry->fDeltaTimeRemaining;			//调整时间差
 
   // Add "newEntry" to the queue, just before "cur":
   newEntry->fNext = cur;
@@ -206,17 +207,18 @@ void DelayQueue::synchronize() {
     fLastSyncTime  = timeNow;
     return;
   }
-  DelayInterval timeSinceLastSync = timeNow - fLastSyncTime;
-  fLastSyncTime = timeNow;
+  DelayInterval timeSinceLastSync = timeNow - fLastSyncTime;		//距离上次同步，已经经过的时间
+  fLastSyncTime = timeNow;											//最新同步时间
 
   // Then, adjust the delay queue for any entries whose time is up:
   DelayQueueEntry* curEntry = head();
-  while (timeSinceLastSync >= curEntry->fDeltaTimeRemaining) {
+  while (timeSinceLastSync >= curEntry->fDeltaTimeRemaining) {		//基准事件变动大，存在超时事件，将超时事件的时间设置为零
     timeSinceLastSync -= curEntry->fDeltaTimeRemaining;
     curEntry->fDeltaTimeRemaining = DELAY_ZERO;
     curEntry = curEntry->fNext;
   }
-  curEntry->fDeltaTimeRemaining -= timeSinceLastSync;
+
+  curEntry->fDeltaTimeRemaining -= timeSinceLastSync;				//更新未超时事件的还需等待时间
 }
 
 

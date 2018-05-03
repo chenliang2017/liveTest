@@ -34,19 +34,20 @@ typedef long time_base_seconds;
 
 class Timeval {
 public:
-  time_base_seconds seconds() const {
+  time_base_seconds seconds() const {	//const修饰函数，表示不可修改类的成员变量；const函数只能调用const函数
     return fTv.tv_sec;
   }
   time_base_seconds seconds() {
     return fTv.tv_sec;
   }
-  time_base_seconds useconds() const {
+  time_base_seconds useconds() const {	//const修饰函数，表示不可修改类的成员变量；const函数只能调用const函数
     return fTv.tv_usec;
   }
   time_base_seconds useconds() {
     return fTv.tv_usec;
   }
 
+  //重载运算符
   int operator>=(Timeval const& arg2) const;
   int operator<=(Timeval const& arg2) const {
     return arg2 >= *this;
