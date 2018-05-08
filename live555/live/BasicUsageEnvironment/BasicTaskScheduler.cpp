@@ -63,12 +63,14 @@ void BasicTaskScheduler::schedulerTickTask() {
 #define MILLION 1000000
 #endif
 
-void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
+//一次执行
+void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {	// maxDelayTime default value is 10ms
   fd_set readSet = fReadSet; // make a copy for this select() call
   fd_set writeSet = fWriteSet; // ditto
   fd_set exceptionSet = fExceptionSet; // ditto
 
-  DelayInterval const& timeToDelay = fDelayQueue.timeToNextAlarm();
+  //保证select函数每次最多睡眠10ms，精度10ms
+  DelayInterval const& timeToDelay = fDelayQueue.timeToNextAlarm();	//延迟事件队列中最先将超时的事件的剩余时间
   struct timeval tv_timeToDelay;
   tv_timeToDelay.tv_sec = timeToDelay.seconds();
   tv_timeToDelay.tv_usec = timeToDelay.useconds();
@@ -82,13 +84,13 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
   if (maxDelayTime > 0 &&
       (tv_timeToDelay.tv_sec > (long)maxDelayTime/MILLION ||
        (tv_timeToDelay.tv_sec == (long)maxDelayTime/MILLION &&
-	tv_timeToDelay.tv_usec > (long)maxDelayTime%MILLION))) {
+		tv_timeToDelay.tv_usec > (long)maxDelayTime%MILLION))) {
     tv_timeToDelay.tv_sec = maxDelayTime/MILLION;
     tv_timeToDelay.tv_usec = maxDelayTime%MILLION;
   }
 
   int selectResult = select(fMaxNumSockets, &readSet, &writeSet, &exceptionSet, &tv_timeToDelay);
-  if (selectResult < 0) {
+  if (selectResult < 0) {	//出错返回
 #if defined(__WIN32__) || defined(_WIN32)
     int err = WSAGetLastError();
     // For some unknown reason, select() in Windoze sometimes fails with WSAEINVAL if
@@ -123,14 +125,23 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
 	fprintf(stderr, "\n");
 #endif
 	internalError();
-      }
+    }
   }
 
+  //如果返回0代表在所有描述符状态改变前已超过timeout时间;
+
+  //执行成功则返回文件描述词状态已改变的个数；三组fd_set均将某些fd位置0，
+  //只有那些可读，可写以及有异常条件待处理的fd位仍然为1；
+
+  // IO事件
   // Call the handler function for one readable socket:
-  HandlerIterator iter(*fHandlers);
+  HandlerIterator iter(*fHandlers);	//fHandlers为双向链表，新节点在表头
   HandlerDescriptor* handler;
   // To ensure forward progress through the handlers, begin past the last
   // socket number that we handled:
+  // IO事件存储在双向链表中，新事件总是存储在表头；
+  // 由于在SingleStep中，IO事件只执行一个，为了保证所有的IO事件都能执行：
+  // 从上次IO事件的下一个事件开始遍历
   if (fLastHandledSocketNum >= 0) {
     while ((handler = iter.next()) != NULL) {
       if (handler->socketNum == fLastHandledSocketNum) break;
@@ -140,20 +151,30 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
       iter.reset(); // start from the beginning instead
     }
   }
+
+  // 遍历IO事件链表，找到第一个可读|可写|可执行的描述符
+  // 执行IO事件的回调函数，记录该事件的描述符
   while ((handler = iter.next()) != NULL) {
     int sock = handler->socketNum; // alias
     int resultConditionSet = 0;
-    if (FD_ISSET(sock, &readSet) && FD_ISSET(sock, &fReadSet)/*sanity check*/) resultConditionSet |= SOCKET_READABLE;
-    if (FD_ISSET(sock, &writeSet) && FD_ISSET(sock, &fWriteSet)/*sanity check*/) resultConditionSet |= SOCKET_WRITABLE;
-    if (FD_ISSET(sock, &exceptionSet) && FD_ISSET(sock, &fExceptionSet)/*sanity check*/) resultConditionSet |= SOCKET_EXCEPTION;
+    if (FD_ISSET(sock, &readSet) && FD_ISSET(sock, &fReadSet)/*sanity check*/) 
+		resultConditionSet |= SOCKET_READABLE;
+    if (FD_ISSET(sock, &writeSet) && FD_ISSET(sock, &fWriteSet)/*sanity check*/) 
+		resultConditionSet |= SOCKET_WRITABLE;
+    if (FD_ISSET(sock, &exceptionSet) && FD_ISSET(sock, &fExceptionSet)/*sanity check*/)
+		resultConditionSet |= SOCKET_EXCEPTION;
     if ((resultConditionSet&handler->conditionSet) != 0 && handler->handlerProc != NULL) {
-      fLastHandledSocketNum = sock;
+		fLastHandledSocketNum = sock;
           // Note: we set "fLastHandledSocketNum" before calling the handler,
           // in case the handler calls "doEventLoop()" reentrantly.
-      (*handler->handlerProc)(handler->clientData, resultConditionSet);
-      break;
+		(*handler->handlerProc)(handler->clientData, resultConditionSet);
+		break;
     }
   }
+
+  // 未找到描述符变化的IO事件
+  // 由于fLastHandledSocketNum大于等于零，上文查找不是从链表头开始的
+  // 需要重新从链表头开始重新查找
   if (handler == NULL && fLastHandledSocketNum >= 0) {
     // We didn't call a handler, but we didn't get to check all of them,
     // so try again from the beginning:
@@ -161,57 +182,67 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
     while ((handler = iter.next()) != NULL) {
       int sock = handler->socketNum; // alias
       int resultConditionSet = 0;
-      if (FD_ISSET(sock, &readSet) && FD_ISSET(sock, &fReadSet)/*sanity check*/) resultConditionSet |= SOCKET_READABLE;
-      if (FD_ISSET(sock, &writeSet) && FD_ISSET(sock, &fWriteSet)/*sanity check*/) resultConditionSet |= SOCKET_WRITABLE;
-      if (FD_ISSET(sock, &exceptionSet) && FD_ISSET(sock, &fExceptionSet)/*sanity check*/) resultConditionSet |= SOCKET_EXCEPTION;
+      if (FD_ISSET(sock, &readSet) && FD_ISSET(sock, &fReadSet)/*sanity check*/) 
+		  resultConditionSet |= SOCKET_READABLE;
+      if (FD_ISSET(sock, &writeSet) && FD_ISSET(sock, &fWriteSet)/*sanity check*/)
+		  resultConditionSet |= SOCKET_WRITABLE;
+      if (FD_ISSET(sock, &exceptionSet) && FD_ISSET(sock, &fExceptionSet)/*sanity check*/)
+		  resultConditionSet |= SOCKET_EXCEPTION;
       if ((resultConditionSet&handler->conditionSet) != 0 && handler->handlerProc != NULL) {
-	fLastHandledSocketNum = sock;
-	    // Note: we set "fLastHandledSocketNum" before calling the handler,
-            // in case the handler calls "doEventLoop()" reentrantly.
-	(*handler->handlerProc)(handler->clientData, resultConditionSet);
-	break;
+			fLastHandledSocketNum = sock;
+			// Note: we set "fLastHandledSocketNum" before calling the handler,
+				// in case the handler calls "doEventLoop()" reentrantly.
+			(*handler->handlerProc)(handler->clientData, resultConditionSet);
+			break;
       }
     }
     if (handler == NULL) fLastHandledSocketNum = -1;//because we didn't call a handler
   }
 
+  // 触发器事件
   // Also handle any newly-triggered event (Note that we do this *after* calling a socket handler,
   // in case the triggered event handler modifies The set of readable sockets.)
   if (fTriggersAwaitingHandling != 0) {
-    if (fTriggersAwaitingHandling == fLastUsedTriggerMask) {
+    if (fTriggersAwaitingHandling == fLastUsedTriggerMask) {	// 触发器事件只有一个
       // Common-case optimization for a single event trigger:
-      fTriggersAwaitingHandling &=~ fLastUsedTriggerMask;
+      fTriggersAwaitingHandling &=~ fLastUsedTriggerMask;		// 触发事件只执行一次
       if (fTriggeredEventHandlers[fLastUsedTriggerNum] != NULL) {
-	(*fTriggeredEventHandlers[fLastUsedTriggerNum])(fTriggeredEventClientDatas[fLastUsedTriggerNum]);
+		(*fTriggeredEventHandlers[fLastUsedTriggerNum])(fTriggeredEventClientDatas[fLastUsedTriggerNum]);
       }
     } else {
-      // Look for an event trigger that needs handling (making sure that we make forward progress through all possible triggers):
-      unsigned i = fLastUsedTriggerNum;
-      EventTriggerId mask = fLastUsedTriggerMask;
+      // Look for an event trigger that needs handling 
+		// (making sure that we make forward progress through all possible triggers):
+      unsigned i = fLastUsedTriggerNum;				//上一个创建的触发器事件的索引
+      EventTriggerId mask = fLastUsedTriggerMask;	//上一个创建的触发器事件的mask
 
+	  // 从当前索引和mask的下一位开始查找触发集合中的事件，
+	  // 保证了，总是优先触发集合中最先创建的事件
       do {
-	i = (i+1)%MAX_NUM_EVENT_TRIGGERS;
-	mask >>= 1;
-	if (mask == 0) mask = 0x80000000;
+		  i = (i + 1) % MAX_NUM_EVENT_TRIGGERS;
+		  mask >>= 1;
+		  if (mask == 0) mask = 0x80000000;
 
-	if ((fTriggersAwaitingHandling&mask) != 0) {
-	  fTriggersAwaitingHandling &=~ mask;
-	  if (fTriggeredEventHandlers[i] != NULL) {
-	    (*fTriggeredEventHandlers[i])(fTriggeredEventClientDatas[i]);
-	  }
+		  if ((fTriggersAwaitingHandling&mask) != 0) {
+			  fTriggersAwaitingHandling &= ~mask;	// 触发事件只执行一次
+			  if (fTriggeredEventHandlers[i] != NULL) {
+				  (*fTriggeredEventHandlers[i])(fTriggeredEventClientDatas[i]);
+			  }
 
-	  fLastUsedTriggerMask = mask;
-	  fLastUsedTriggerNum = i;
-	  break;
-	}
+			  fLastUsedTriggerMask = mask;
+			  fLastUsedTriggerNum = i;
+			  break;	// 每次只执行一个触发器事件
+		  }
       } while (i != fLastUsedTriggerNum);
     }
   }
 
+  // 延迟事件
+  // 每次只执行一个超时事件
   // Also handle any delayed event that may have come due.
   fDelayQueue.handleAlarm();
 }
 
+//新增IO事件，socketNum为文件描述符
 void BasicTaskScheduler
   ::setBackgroundHandling(int socketNum, int conditionSet, BackgroundHandlerProc* handlerProc, void* clientData) {
   if (socketNum < 0) return;
@@ -237,6 +268,7 @@ void BasicTaskScheduler
   }
 }
 
+//更新oldSocketNum事件的socketNum为newSocketNum
 void BasicTaskScheduler::moveSocketHandling(int oldSocketNum, int newSocketNum) {
   if (oldSocketNum < 0 || newSocketNum < 0) return; // sanity check
 #if !defined(__WIN32__) && !defined(_WIN32) && defined(FD_SETSIZE)

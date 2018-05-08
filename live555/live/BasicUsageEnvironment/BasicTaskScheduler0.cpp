@@ -85,6 +85,7 @@ EventTriggerId BasicTaskScheduler0::createEventTrigger(TaskFunc* eventHandlerPro
   unsigned i = fLastUsedTriggerNum;
   EventTriggerId mask = fLastUsedTriggerMask;
 
+  //遍历32个槽位，找到可用槽位，返回mask
   do {
     i = (i+1)%MAX_NUM_EVENT_TRIGGERS;
     mask >>= 1;
@@ -118,8 +119,8 @@ void BasicTaskScheduler0::deleteEventTrigger(EventTriggerId eventTriggerId) {
     EventTriggerId mask = 0x80000000;
     for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
       if ((eventTriggerId&mask) != 0) {
-	fTriggeredEventHandlers[i] = NULL;
-	fTriggeredEventClientDatas[i] = NULL;
+		  fTriggeredEventHandlers[i] = NULL;
+		  fTriggeredEventClientDatas[i] = NULL;
       }
       mask >>= 1;
     }
@@ -133,7 +134,7 @@ void BasicTaskScheduler0::triggerEvent(EventTriggerId eventTriggerId, void* clie
     if ((eventTriggerId&mask) != 0) {
       fTriggeredEventClientDatas[i] = clientData;
     }
-    mask >>= 1;
+    mask >>= 1;	//这里说允许eventTriggerId是多个Id的或组合，所以在满足if条件时，没有break
   }
 
   // Then, note this event as being ready to be handled.

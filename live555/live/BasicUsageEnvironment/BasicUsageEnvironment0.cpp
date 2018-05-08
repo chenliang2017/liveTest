@@ -97,7 +97,7 @@ void BasicUsageEnvironment0::appendToResultMsg(MsgString msg) {
     msgLength = spaceAvailable-1;
   }
 
-  memmove(curPtr, (char*)msg, msgLength);
+  memmove(curPtr, (char*)msg, msgLength);	//升级版本的memcpy(),当指针重叠的时候，也可以正常拷贝数据
   fCurBufferSize += msgLength;
   fResultMsgBuffer[fCurBufferSize] = '\0';
 }

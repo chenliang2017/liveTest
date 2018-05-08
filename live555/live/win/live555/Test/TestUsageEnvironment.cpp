@@ -22,6 +22,8 @@ void handlerFunc(void* clientData, int mask)
 
 int main(int argc, char* args[])
 {
+	int len = sizeof(fd_set);
+
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
 	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
 
@@ -34,8 +36,8 @@ int main(int argc, char* args[])
 	char triggerClientData3[] = "Trigger Event 3";
 	(*env) << "Setting Event triggers...\n";
 	scheduler->triggerEvent(id2, (void*)triggerClientData2);
-	scheduler->triggerEvent(id1, (void*)triggerClientData1);
 	scheduler->triggerEvent(id3, (void*)triggerClientData3);
+	scheduler->triggerEvent(id1, (void*)triggerClientData1);
 	(*env) << "Event triggers has been set.\n";
 
 	// delayed task test
