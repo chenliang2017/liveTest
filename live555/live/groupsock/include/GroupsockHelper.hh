@@ -137,8 +137,12 @@ extern int gettimeofday(struct timeval*, int*);
 #include <sys/time.h>
 #endif
 
+// c++ and c 混合编程时，
+// extern是C/C++语言中表明函数和全局变量作用范围（可见性）的关键字，该关键字告诉编译器，其声明的函数和变量可以在本模块或其它模块中使用
+// extern "C"的真实目的是实现类C和C++的混合编程。在C++源文件中的语句前面加上extern "C"，表明它按照类C的编译和连接规约来编译和连接，而不是C++的编译的连接规约。
+
 // The following are implemented in inet.c:
-extern "C" netAddressBits our_inet_addr(char const*);
+extern "C" netAddressBits our_inet_addr(char const*);	//将点分十进制的ip地址转化为网络字节序的长整型数
 extern "C" void our_srandom(int x);
 extern "C" long our_random();
 extern "C" u_int32_t our_random32(); // because "our_random()" returns a 31-bit number

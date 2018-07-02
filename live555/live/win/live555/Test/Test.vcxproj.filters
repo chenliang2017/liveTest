@@ -23,5 +23,11 @@
     <ClCompile Include="TestUsageEnvironment.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\testProgs\testH264VideoStreamer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\testProgs\testOnDemandRTSPServer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

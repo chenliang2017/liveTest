@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>../Release/;$(LibraryPath)</LibraryPath>
-    <IncludePath>../../../BasicUsageEnvironment/include/;../../../groupsock/include/;../../../liveMedia/include/;../../../UsageEnvironment/include/;../../../liveMedia/;$(IncludePath)</IncludePath>
+    <IncludePath>../../../BasicUsageEnvironment/include/;../../../groupsock/include/;../../../liveMedia/include/;../../../UsageEnvironment/include/;../../../liveMedia/;../../../testProgs/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -84,6 +84,8 @@
     <ClInclude Include="TestConfigure.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\testProgs\testH264VideoStreamer.cpp" />
+    <ClCompile Include="..\..\..\testProgs\testOnDemandRTSPServer.cpp" />
     <ClCompile Include="TestUsageEnvironment.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

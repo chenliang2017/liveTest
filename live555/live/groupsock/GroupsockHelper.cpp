@@ -45,6 +45,7 @@ static void socketErr(UsageEnvironment& env, char const* errorMsg) {
   env.setResultErrMsg(errorMsg);
 }
 
+// 地址不重用类
 NoReuse::NoReuse(UsageEnvironment& env)
   : fEnv(env) {
   groupsockPriv(fEnv)->reuseFlag = 0;
@@ -55,7 +56,7 @@ NoReuse::~NoReuse() {
   reclaimGroupsockPriv(fEnv);
 }
 
-
+// 获取
 _groupsockPriv* groupsockPriv(UsageEnvironment& env) {
   if (env.groupsockPriv == NULL) { // We need to create it
     _groupsockPriv* result = new _groupsockPriv;
@@ -66,6 +67,7 @@ _groupsockPriv* groupsockPriv(UsageEnvironment& env) {
   return (_groupsockPriv*)(env.groupsockPriv);
 }
 
+// 回收(释放)
 void reclaimGroupsockPriv(UsageEnvironment& env) {
   _groupsockPriv* priv = (_groupsockPriv*)(env.groupsockPriv);
   if (priv->socketTable == NULL && priv->reuseFlag == 1/*default value*/) {

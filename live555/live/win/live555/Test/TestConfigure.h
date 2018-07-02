@@ -1,6 +1,8 @@
 #ifndef _TEST_CONFIG_H_
 #define _TEST_CONFIG_H_
 
-#define TEST_USAGE_ENVIRONMENT
+//#define TEST_USAGE_ENVIRONMENT
+
+#define TEST_H264_VIDEO_STREAMER
 
 #endif

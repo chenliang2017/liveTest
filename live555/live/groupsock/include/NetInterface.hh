@@ -117,7 +117,7 @@ public:
   virtual ~SocketLookupTable();
 
   Socket* Fetch(UsageEnvironment& env, Port port, Boolean& isNew);
-  // Creates a new Socket if none already exists
+  // Creates a new Socket if none already exists, ²»»áÐÞ¸ÄÌæ»»
   Boolean Remove(Socket const* sock);
 
 protected:

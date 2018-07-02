@@ -28,6 +28,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <BasicUsageEnvironment.hh>
 #include <GroupsockHelper.hh>
 
+//#define TEST_H264_VIDEO_STREAMER
+
+#ifdef TEST_H264_VIDEO_STREAMER
+
 UsageEnvironment* env;
 char const* inputFileName = "test.264";
 H264VideoStreamFramer* videoSource;
@@ -130,3 +134,5 @@ void play() {
   *env << "Beginning to read from file...\n";
   videoSink->startPlaying(*videoSource, afterPlaying, videoSink);
 }
+
+#endif

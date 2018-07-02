@@ -27,6 +27,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 typedef u_int16_t Cookie;
 
+//tunnel: 隧道
+//encapsulation: 封装包
+//trailer：拖车
+
 class TunnelEncapsulationTrailer {
 	// The trailer is layed out as follows:
 	// bytes 0-1:	source 'cookie'
@@ -39,6 +43,8 @@ class TunnelEncapsulationTrailer {
         // Optionally, there may also be a 4-byte 'auxilliary address'
         // (e.g., for 'source-specific multicast' preceding this)
         // bytes -4 through -1: auxilliary address
+	
+	// at least need 12 bytes
 
     public:
 	Cookie& srcCookie()
@@ -48,7 +54,7 @@ class TunnelEncapsulationTrailer {
 	u_int32_t& address()
 		{ return *(u_int32_t*)byteOffset(4); }
 	Port& port()
-		{ return *(Port*)byteOffset(8); }
+		{ return *(Port*)byteOffset(8); }	//这里把u_int16_t类型赋值给了Port类；类可以当做结构体用；
 	u_int8_t& ttl()
 		{ return *(u_int8_t*)byteOffset(10); }
 	u_int8_t& command()
@@ -62,23 +68,26 @@ class TunnelEncapsulationTrailer {
 		{ return ((char*)this) + charIndex; }
 };
 
-const unsigned TunnelEncapsulationTrailerSize = 12; // bytes
-const unsigned TunnelEncapsulationTrailerAuxSize = 4; // bytes
+const unsigned TunnelEncapsulationTrailerSize = 12;		// bytes
+const unsigned TunnelEncapsulationTrailerAuxSize = 4;	// bytes
 const unsigned TunnelEncapsulationTrailerMaxSize
     = TunnelEncapsulationTrailerSize + TunnelEncapsulationTrailerAuxSize;
 
 // Command codes:
 // 0: unused
-const u_int8_t TunnelDataCmd = 1;
-const u_int8_t TunnelJoinGroupCmd = 2;
-const u_int8_t TunnelLeaveGroupCmd = 3;
-const u_int8_t TunnelTearDownCmd = 4;
-const u_int8_t TunnelProbeCmd = 5;
-const u_int8_t TunnelProbeAckCmd = 6;
-const u_int8_t TunnelProbeNackCmd = 7;
-const u_int8_t TunnelJoinRTPGroupCmd = 8;
-const u_int8_t TunnelLeaveRTPGroupCmd = 9;
+const u_int8_t TunnelDataCmd = 1;				//隧道的数据命令
+const u_int8_t TunnelJoinGroupCmd = 2;			//隧道的加入组命令
+const u_int8_t TunnelLeaveGroupCmd = 3;			//隧道的离开组命令
+const u_int8_t TunnelTearDownCmd = 4;			//隧道的关闭命令
+const u_int8_t TunnelProbeCmd = 5;				//隧道的探测命令
+const u_int8_t TunnelProbeAckCmd = 6;			//隧道的探测确认应答命令
+const u_int8_t TunnelProbeNackCmd = 7;			//隧道的探测否定应答命令
+const u_int8_t TunnelJoinRTPGroupCmd = 8;		//隧道的加入RTP组命令
+const u_int8_t TunnelLeaveRTPGroupCmd = 9;		//隧道的离开RTP组命令
+
 // 0x0A through 0x10: currently unused.
+
+// 以下为辅助命令
 const u_int8_t TunnelExtensionFlag = 0x80; // a flag, not a cmd code
 const u_int8_t TunnelDataAuxCmd
     = (TunnelExtensionFlag|TunnelDataCmd);
@@ -94,6 +103,7 @@ const u_int8_t TunnelLeaveRTPGroupAuxCmd
     = (TunnelExtensionFlag|TunnelLeaveRTPGroupCmd);
 // 0x8A through 0xFF: currently unused
 
+// 判断是否是辅助命令
 inline Boolean TunnelIsAuxCmd(u_int8_t cmd) {
   return (cmd&TunnelExtensionFlag) != 0;
 }

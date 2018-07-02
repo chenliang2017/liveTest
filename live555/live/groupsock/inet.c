@@ -15,7 +15,7 @@
 unsigned our_inet_addr(cp)
 	char const* cp;
 {
-	return inet_addr(cp);
+	return inet_addr(cp);	//将点分十进制的ip地址转化为网络字节序的长整型数
 }
 
 #if defined(__WIN32__) || defined(_WIN32)

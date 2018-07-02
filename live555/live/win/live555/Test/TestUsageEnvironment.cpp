@@ -6,6 +6,8 @@
 
 #include "TestConfigure.h"
 
+#ifdef TEST_USAGE_ENVIRONMENT
+
 using namespace std;
 
 void taskFunc(void* clientData)
@@ -17,8 +19,6 @@ void handlerFunc(void* clientData, int mask)
 {
 	cout << "handlerFunc(\"" << (char*)clientData << "\", " << mask << ") called." << endl;
 }
-
-#ifdef TEST_USAGE_ENVIRONMENT
 
 int main(int argc, char* args[])
 {

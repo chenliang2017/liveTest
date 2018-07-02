@@ -32,7 +32,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <errno.h>
 #include <string.h>
 
-#define closeSocket closesocket
+#define closeSocket closesocket				//关闭socket
 #ifdef EWOULDBLOCK
 #undef EWOULDBLOCK
 #endif
@@ -45,10 +45,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifdef EINTR
 #undef EINTR
 #endif
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define EINPROGRESS WSAEWOULDBLOCK
-#define EAGAIN WSAEWOULDBLOCK
-#define EINTR WSAEINTR
+#define EWOULDBLOCK WSAEWOULDBLOCK			//10035L 可能会被阻塞
+#define EINPROGRESS WSAEWOULDBLOCK			//10035L 操作正在进行
+#define EAGAIN WSAEWOULDBLOCK				//10035L 再试一次
+#define EINTR WSAEINTR						//10004L 中断
 
 #if defined(_WIN32_WCE)
 #define NO_STRSTREAM 1

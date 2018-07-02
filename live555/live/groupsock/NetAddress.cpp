@@ -65,7 +65,7 @@ NetAddress::~NetAddress() {
 }
 
 void NetAddress::assign(u_int8_t const* data, unsigned length) {
-  fData = new u_int8_t[length];
+  fData = new u_int8_t[length];	//new[] and delete[] 针对数组操作；
   if (fData == NULL) {
     fLength = 0;
     return;
@@ -105,13 +105,13 @@ NetAddressList::NetAddressList(char const* hostname)
 
   host = (struct hostent*)resolvGetHostByName((char*)hostname, (char*)&hostentBuf, sizeof hostentBuf);
 #else
-  host = gethostbyname((char*)hostname);
+  host = gethostbyname((char*)hostname);	//用域名或者主机名获取IP地址
 #endif
   if (host == NULL || host->h_length != 4 || host->h_addr_list == NULL) return; // no luck
 
-  u_int8_t const** const hAddrPtr = (u_int8_t const**)host->h_addr_list;
+  u_int8_t const** const hAddrPtr = (u_int8_t const**)host->h_addr_list;	// const修饰hAddrPtr，表示hAddrPtr内容不可改；const修饰u_int8_t，说明指向地址不可改
   // First, count the number of addresses:
-  u_int8_t const** hAddrPtr1 = hAddrPtr;
+  u_int8_t const** hAddrPtr1 = hAddrPtr;									// 只有const修饰u_int8_t，指向内容不可改，指针hAddrPtr1可改
   while (*hAddrPtr1 != NULL) {
     ++fNumAddresses;
     ++hAddrPtr1;

@@ -55,8 +55,8 @@ private:
   void assign(u_int8_t const* data, unsigned length);
   void clean();
   
-  unsigned fLength;
-  u_int8_t* fData;
+  unsigned fLength;		//存储地址数据
+  u_int8_t* fData;		//存储地址长度
 };
 
 class NetAddressList {
