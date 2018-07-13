@@ -47,6 +47,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define mediumNameMaxLen 30
 
+
+// 媒体处理基类
 class Medium {
 public:
   static Boolean lookupByName(UsageEnvironment& env,
@@ -60,6 +62,7 @@ public:
 
   char const* name() const {return fMediumName;}
 
+  // const修饰的函数不能修改对象的数据成员；只能调用const函数；
   // Test for specific types of media:
   virtual Boolean isSource() const;
   virtual Boolean isSink() const;

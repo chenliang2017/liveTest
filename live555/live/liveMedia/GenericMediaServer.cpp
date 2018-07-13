@@ -27,11 +27,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// GenericMediaServer implementation //////////
 
+// 向Hash表fServerMediaSessions中添加一路流信息
 void GenericMediaServer::addServerMediaSession(ServerMediaSession* serverMediaSession) {
   if (serverMediaSession == NULL) return;
   
   char const* sessionName = serverMediaSession->streamName();
   if (sessionName == NULL) sessionName = "";
+
+  //先删除原有同名流
   removeServerMediaSession(sessionName); // in case an existing "ServerMediaSession" with this name already exists
   
   fServerMediaSessions->Add(sessionName, (void*)serverMediaSession);
@@ -43,6 +46,7 @@ ServerMediaSession* GenericMediaServer
   return (ServerMediaSession*)(fServerMediaSessions->Lookup(streamName));
 }
 
+// 从Hash表fServerMediaSessions中删除名为streamName的流
 void GenericMediaServer::removeServerMediaSession(ServerMediaSession* serverMediaSession) {
   if (serverMediaSession == NULL) return;
   
@@ -54,10 +58,12 @@ void GenericMediaServer::removeServerMediaSession(ServerMediaSession* serverMedi
   }
 }
 
+// 同上
 void GenericMediaServer::removeServerMediaSession(char const* streamName) {
   removeServerMediaSession((ServerMediaSession*)(fServerMediaSessions->Lookup(streamName)));
 }
 
+// 删除Hash表fClientSessions中，从serverMediaSession取流的所有客户连接
 void GenericMediaServer::closeAllClientSessionsForServerMediaSession(ServerMediaSession* serverMediaSession) {
   if (serverMediaSession == NULL) return;
   
@@ -72,10 +78,12 @@ void GenericMediaServer::closeAllClientSessionsForServerMediaSession(ServerMedia
   delete iter;
 }
 
+// 同上
 void GenericMediaServer::closeAllClientSessionsForServerMediaSession(char const* streamName) {
   closeAllClientSessionsForServerMediaSession((ServerMediaSession*)(fServerMediaSessions->Lookup(streamName)));
 }
 
+// 关闭流serverMediaSession
 void GenericMediaServer::deleteServerMediaSession(ServerMediaSession* serverMediaSession) {
   if (serverMediaSession == NULL) return;
   
@@ -83,6 +91,7 @@ void GenericMediaServer::deleteServerMediaSession(ServerMediaSession* serverMedi
   removeServerMediaSession(serverMediaSession);
 }
 
+// 同上
 void GenericMediaServer::deleteServerMediaSession(char const* streamName) {
   deleteServerMediaSession((ServerMediaSession*)(fServerMediaSessions->Lookup(streamName)));
 }
@@ -97,6 +106,7 @@ GenericMediaServer
     fClientSessions(HashTable::create(STRING_HASH_KEYS)) {
   ignoreSigPipeOnSocket(fServerSocket); // so that clients on the same host that are killed don't also kill us
   
+  // 注册监听套接字回调函数，可读时触发回调
   // Arrange to handle connections from others:
   env.taskScheduler().turnOnBackgroundReadHandling(fServerSocket, incomingConnectionHandler, this);
 }
@@ -138,6 +148,7 @@ void GenericMediaServer::cleanup() {
 
 #define LISTEN_BACKLOG_SIZE 20
 
+//启动监听，默认非阻塞，50k发送缓冲区，关闭了SO_REUSEADDR
 int GenericMediaServer::setUpOurSocket(UsageEnvironment& env, Port& ourPort) {
   int ourSocket = -1;
   
@@ -173,6 +184,7 @@ int GenericMediaServer::setUpOurSocket(UsageEnvironment& env, Port& ourPort) {
   return -1;
 }
 
+// 监听套接字可读时的回调函数，处理网络连接请求
 void GenericMediaServer::incomingConnectionHandler(void* instance, int /*mask*/) {
   GenericMediaServer* server = (GenericMediaServer*)instance;
   server->incomingConnectionHandler();
@@ -181,9 +193,12 @@ void GenericMediaServer::incomingConnectionHandler() {
   incomingConnectionHandlerOnSocket(fServerSocket);
 }
 
+//实际执行网络请求处理的函数
 void GenericMediaServer::incomingConnectionHandlerOnSocket(int serverSocket) {
   struct sockaddr_in clientAddr;
   SOCKLEN_T clientAddrLen = sizeof clientAddr;
+
+  //clientAddr存储远端客户的ip和端口
   int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
   if (clientSocket < 0) {
     int err = envir().getErrno();
@@ -193,13 +208,17 @@ void GenericMediaServer::incomingConnectionHandlerOnSocket(int serverSocket) {
     return;
   }
   ignoreSigPipeOnSocket(clientSocket); // so that clients on the same host that are killed don't also kill us
-  makeSocketNonBlocking(clientSocket);
-  increaseSendBufferTo(envir(), clientSocket, 50*1024);
+  makeSocketNonBlocking(clientSocket); // 非阻塞
+  increaseSendBufferTo(envir(), clientSocket, 50*1024); // 50k发送缓冲区
   
 #ifdef DEBUG
   envir() << "accept()ed connection from " << AddressString(clientAddr).val() << "\n";
 #endif
   
+#if 1
+  printf("accept connection from %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+#endif
+
   // Create a new object for handling this connection:
   (void)createNewClientConnection(clientSocket, clientAddr);
 }

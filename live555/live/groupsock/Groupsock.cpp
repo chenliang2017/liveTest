@@ -42,6 +42,7 @@ OutputSocket::OutputSocket(UsageEnvironment& env, Port port)
 OutputSocket::~OutputSocket() {
 }
 
+//·¢ËÍudpÊı¾İ
 Boolean OutputSocket::write(netAddressBits address, portNumBits portNum, u_int8_t ttl,
 			    unsigned char* buffer, unsigned bufferSize) {
   struct in_addr destAddr; destAddr.s_addr = address;

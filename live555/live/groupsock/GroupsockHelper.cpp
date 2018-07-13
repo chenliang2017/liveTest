@@ -56,7 +56,7 @@ NoReuse::~NoReuse() {
   reclaimGroupsockPriv(fEnv);
 }
 
-// 获取
+// 获取属性
 _groupsockPriv* groupsockPriv(UsageEnvironment& env) {
   if (env.groupsockPriv == NULL) { // We need to create it
     _groupsockPriv* result = new _groupsockPriv;
@@ -77,6 +77,7 @@ void reclaimGroupsockPriv(UsageEnvironment& env) {
   }
 }
 
+// 创建套接字
 static int createSocket(int type) {
   // Call "socket()" to create a (IPv4) socket of the specified type.
   // But also set it to have the 'close on exec' property (if we can)
@@ -92,9 +93,11 @@ static int createSocket(int type) {
 #ifdef FD_CLOEXEC
   if (sock != -1) fcntl(sock, F_SETFD, FD_CLOEXEC);
 #endif
+
   return sock;
 }
 
+//创建udp套接字
 int setupDatagramSocket(UsageEnvironment& env, Port port) {
   if (!initializeWinsockIfNecessary()) {
     socketErr(env, "Failed to initialize 'winsock': ");
@@ -107,6 +110,7 @@ int setupDatagramSocket(UsageEnvironment& env, Port port) {
     return newSocket;
   }
 
+  //地址重用，在GenericMediaServer中通过NoReuse默认关闭了该功能
   int reuseFlag = groupsockPriv(env)->reuseFlag;
   reclaimGroupsockPriv(env);
   if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR,
@@ -176,6 +180,7 @@ int setupDatagramSocket(UsageEnvironment& env, Port port) {
   return newSocket;
 }
 
+//非阻塞
 Boolean makeSocketNonBlocking(int sock) {
 #if defined(__WIN32__) || defined(_WIN32)
   unsigned long arg = 1;
@@ -189,6 +194,7 @@ Boolean makeSocketNonBlocking(int sock) {
 #endif
 }
 
+//设置阻塞标志，同时携带超时时间
 Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds) {
   Boolean result;
 #if defined(__WIN32__) || defined(_WIN32)
@@ -219,6 +225,7 @@ Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds) {
   return result;
 }
 
+//tcp套接字创建，属性配置
 int setupStreamSocket(UsageEnvironment& env,
                       Port port, Boolean makeNonBlocking) {
   if (!initializeWinsockIfNecessary()) {
@@ -232,6 +239,7 @@ int setupStreamSocket(UsageEnvironment& env,
     return newSocket;
   }
 
+  //地址重用，在GenericMediaServer中通过NoReuse默认关闭了该功能
   int reuseFlag = groupsockPriv(env)->reuseFlag;
   reclaimGroupsockPriv(env);
   if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR,
@@ -289,6 +297,7 @@ int setupStreamSocket(UsageEnvironment& env,
   return newSocket;
 }
 
+//网络接受数据
 int readSocket(UsageEnvironment& env,
 	       int socket, unsigned char* buffer, unsigned bufferSize,
 	       struct sockaddr_in& fromAddress) {
@@ -345,6 +354,7 @@ Boolean writeSocket(UsageEnvironment& env,
   return writeSocket(env, socket, address, portNum, buffer, bufferSize);
 }
 
+//网络发送数据(UDP)
 Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct in_addr address, portNumBits portNum,
 		    unsigned char* buffer, unsigned bufferSize) {
@@ -388,9 +398,13 @@ static unsigned getBufferSize(UsageEnvironment& env, int bufOptName,
 
   return curSize;
 }
+
+//获取socket发送缓冲区大小
 unsigned getSendBufferSize(UsageEnvironment& env, int socket) {
   return getBufferSize(env, SO_SNDBUF, socket);
 }
+
+//获取socket接受缓冲区大小
 unsigned getReceiveBufferSize(UsageEnvironment& env, int socket) {
   return getBufferSize(env, SO_RCVBUF, socket);
 }
@@ -403,10 +417,14 @@ static unsigned setBufferTo(UsageEnvironment& env, int bufOptName,
   // Get and return the actual, resulting buffer size:
   return getBufferSize(env, bufOptName, socket);
 }
+
+//设置socket发送缓冲区大小
 unsigned setSendBufferTo(UsageEnvironment& env,
 			 int socket, unsigned requestedSize) {
 	return setBufferTo(env, SO_SNDBUF, socket, requestedSize);
 }
+
+//设置socket接受缓冲区大小
 unsigned setReceiveBufferTo(UsageEnvironment& env,
 			    int socket, unsigned requestedSize) {
 	return setBufferTo(env, SO_RCVBUF, socket, requestedSize);
@@ -432,10 +450,14 @@ static unsigned increaseBufferTo(UsageEnvironment& env, int bufOptName,
 
   return getBufferSize(env, bufOptName, socket);
 }
+
+//发送缓冲区增加至requestedSize
 unsigned increaseSendBufferTo(UsageEnvironment& env,
 			      int socket, unsigned requestedSize) {
   return increaseBufferTo(env, SO_SNDBUF, socket, requestedSize);
 }
+
+//接受缓冲区增加至requestedSize
 unsigned increaseReceiveBufferTo(UsageEnvironment& env,
 				 int socket, unsigned requestedSize) {
   return increaseBufferTo(env, SO_RCVBUF, socket, requestedSize);

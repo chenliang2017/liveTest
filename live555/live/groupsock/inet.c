@@ -18,6 +18,7 @@ unsigned our_inet_addr(cp)
 	return inet_addr(cp);	//将点分十进制的ip地址转化为网络字节序的长整型数
 }
 
+//初始化套接字
 #if defined(__WIN32__) || defined(_WIN32)
 #ifndef IMN_PIM
 #define WS_VERSION_CHOICE1 0x202/*MAKEWORD(2,2)*/

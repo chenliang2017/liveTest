@@ -78,6 +78,7 @@ public:
 // A "Groupsock" is used to both send and receive packets.
 // As the name suggests, it was originally designed to send/receive
 // multicast, but it can send/receive unicast as well.
+// udp 组播时使用
 
 class Groupsock: public OutputSocket {
 public:
