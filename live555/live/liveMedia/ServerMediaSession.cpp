@@ -102,7 +102,7 @@ ServerMediaSession::addSubsession(ServerMediaSubsession* subsession) {
   fSubsessionsTail = subsession;
 
   subsession->fParentSession = this;
-  subsession->fTrackNumber = ++fSubsessionCounter;
+  subsession->fTrackNumber = ++fSubsessionCounter;	//从0开始累加，区分子会话
   return True;
 }
 
@@ -111,6 +111,7 @@ void ServerMediaSession::testScaleFactor(float& scale) {
   // If the subsessions' actual scales differ from each other, choose the
   // value that's closest to 1, and then try re-setting all subsessions to that
   // value.  If the subsessions' actual scales still differ, re-set them all to 1.
+  // 只支持1倍速
   float minSSScale = 1.0;
   float maxSSScale = 1.0;
   float bestSSScale = 1.0;
@@ -122,18 +123,18 @@ void ServerMediaSession::testScaleFactor(float& scale) {
     subsession->testScaleFactor(ssscale);
     if (subsession == fSubsessionsHead) { // this is the first subsession
       minSSScale = maxSSScale = bestSSScale = ssscale;
-      bestDistanceTo1 = (float)fabs(ssscale - 1.0f);
+      bestDistanceTo1 = (float)fabs(ssscale - 1.0f);	// fabs(),求绝对值函数
     } else {
       if (ssscale < minSSScale) {
-	minSSScale = ssscale;
+		minSSScale = ssscale;
       } else if (ssscale > maxSSScale) {
-	maxSSScale = ssscale;
+		maxSSScale = ssscale;
       }
 
       float distanceTo1 = (float)fabs(ssscale - 1.0f);
       if (distanceTo1 < bestDistanceTo1) {
-	bestSSScale = ssscale;
-	bestDistanceTo1 = distanceTo1;
+		bestSSScale = ssscale;
+		bestDistanceTo1 = distanceTo1;
       }
     }
   }
@@ -181,16 +182,16 @@ float ServerMediaSession::duration() const {
     if (subsession == fSubsessionsHead) { // this is the first subsession
       minSubsessionDuration = maxSubsessionDuration = ssduration;
     } else if (ssduration < minSubsessionDuration) {
-	minSubsessionDuration = ssduration;
+		minSubsessionDuration = ssduration;
     } else if (ssduration > maxSubsessionDuration) {
-	maxSubsessionDuration = ssduration;
+		maxSubsessionDuration = ssduration;
     }
   }
 
   if (maxSubsessionDuration != minSubsessionDuration) {
-    return -maxSubsessionDuration; // because subsession durations differ
+    return -maxSubsessionDuration;	// because subsession durations differ
   } else {
-    return maxSubsessionDuration; // all subsession durations are the same
+    return maxSubsessionDuration;	// all subsession durations are the same
   }
 }
 
@@ -237,7 +238,7 @@ char* ServerMediaSession::generateSDPDescription() {
     ServerMediaSubsession* subsession;
     for (subsession = fSubsessionsHead; subsession != NULL;
 	 subsession = subsession->fNext) {
-      char const* sdpLines = subsession->sdpLines();
+      char const* sdpLines = subsession->sdpLines(); //获取每个子会话的sdp信息
       if (sdpLines == NULL) continue; // the media's not available
       sdpLength += strlen(sdpLines);
     }
