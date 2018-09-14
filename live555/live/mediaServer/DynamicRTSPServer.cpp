@@ -26,6 +26,7 @@ DynamicRTSPServer*
 DynamicRTSPServer::createNew(UsageEnvironment& env, Port ourPort,
 			     UserAuthenticationDatabase* authDatabase,
 			     unsigned reclamationTestSeconds) {
+  //启动监听，默认非阻塞，50k发送缓冲区，关闭了SO_REUSEADDR
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
 
@@ -64,15 +65,15 @@ ServerMediaSession* DynamicRTSPServer
 
     return NULL;
   } else {
-    if (smsExists && isFirstLookupInSession) { 
+    if (smsExists && isFirstLookupInSession) {
       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
       // file has changed in some way:
-      removeServerMediaSession(sms); 
+      removeServerMediaSession(sms);
       sms = NULL;
-    } 
+    }
 
     if (sms == NULL) {
-      sms = createNewSMS(envir(), streamName, fid); 
+      sms = createNewSMS(envir(), streamName, fid);
       addServerMediaSession(sms);
     }
 

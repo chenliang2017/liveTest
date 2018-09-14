@@ -48,6 +48,7 @@ static void decodeURL(char* url) {
   *url = '\0';
 }
 
+// Ω‚Œˆrtspœ˚œ¢
 Boolean parseRTSPRequestString(char const* reqStr,
 			       unsigned reqStrSize,
 			       char* resultCmdName,
@@ -58,8 +59,8 @@ Boolean parseRTSPRequestString(char const* reqStr,
 			       unsigned resultURLSuffixMaxSize,
 			       char* resultCSeq,
 			       unsigned resultCSeqMaxSize,
-                               char* resultSessionIdStr,
-                               unsigned resultSessionIdStrMaxSize,
+                   char* resultSessionIdStr,
+                   unsigned resultSessionIdStrMaxSize,
 			       unsigned& contentLength) {
   // This parser is currently rather dumb; it should be made smarter #####
 
@@ -97,12 +98,12 @@ Boolean parseRTSPRequestString(char const* reqStr,
 	&& reqStr[j+4] == ':' && reqStr[j+5] == '/') {
       j += 6;
       if (reqStr[j] == '/') {
-	// This is a "rtsp://" URL; skip over the host:port part that follows:
-	++j;
-	while (j < reqStrSize && reqStr[j] != '/' && reqStr[j] != ' ') ++j;
+		// This is a "rtsp://" URL; skip over the host:port part that follows:
+		++j;
+		while (j < reqStrSize && reqStr[j] != '/' && reqStr[j] != ' ') ++j;
       } else {
-	// This is a "rtsp:/" URL; back up to the "/":
-	--j;
+		// This is a "rtsp:/" URL; back up to the "/":
+		--j;
       }
       i = j;
       break;
@@ -158,13 +159,13 @@ Boolean parseRTSPRequestString(char const* reqStr,
       while (j < reqStrSize && (reqStr[j] ==  ' ' || reqStr[j] == '\t')) ++j;
       unsigned n;
       for (n = 0; n < resultCSeqMaxSize-1 && j < reqStrSize; ++n,++j) {
-	char c = reqStr[j];
-	if (c == '\r' || c == '\n') {
-	  parseSucceeded = True;
-	  break;
-	}
+		char c = reqStr[j];
+		if (c == '\r' || c == '\n') {
+			parseSucceeded = True;
+			break;
+		}
 
-	resultCSeq[n] = c;
+		resultCSeq[n] = c;
       }
       resultCSeq[n] = '\0';
       break;
@@ -181,12 +182,12 @@ Boolean parseRTSPRequestString(char const* reqStr,
       while (j < reqStrSize && (reqStr[j] ==  ' ' || reqStr[j] == '\t')) ++j;
       unsigned n;
       for (n = 0; n < resultSessionIdStrMaxSize-1 && j < reqStrSize; ++n,++j) {
-	char c = reqStr[j];
-	if (c == '\r' || c == '\n') {
-	  break;
-	}
+		char c = reqStr[j];
+		if (c == '\r' || c == '\n') {
+			break;
+		}
 
-	resultSessionIdStr[n] = c;
+		resultSessionIdStr[n] = c;
       }
       resultSessionIdStr[n] = '\0';
       break;
@@ -201,7 +202,7 @@ Boolean parseRTSPRequestString(char const* reqStr,
       while (j < reqStrSize && (reqStr[j] ==  ' ' || reqStr[j] == '\t')) ++j;
       unsigned num;
       if (sscanf(&reqStr[j], "%u", &num) == 1) {
-	contentLength = num;
+		contentLength = num;
       }
     }
   }
