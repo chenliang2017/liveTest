@@ -44,11 +44,11 @@ static void decodeURL(char* url) {
       *url++ = *cursor++;
     }
   }
-  
+
   *url = '\0';
 }
 
-// 解析rtsp消息
+// 解析rtsp消息头，不包含context
 Boolean parseRTSPRequestString(char const* reqStr,
 			       unsigned reqStrSize,
 			       char* resultCmdName,

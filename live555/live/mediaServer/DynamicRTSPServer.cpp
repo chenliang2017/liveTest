@@ -52,6 +52,7 @@ ServerMediaSession* DynamicRTSPServer
   Boolean fileExists = fid != NULL;
 
   // Next, check whether we already have a "ServerMediaSession" for this file:
+  // 查找已有ServerMediaSession
   ServerMediaSession* sms = RTSPServer::lookupServerMediaSession(streamName);
   Boolean smsExists = sms != NULL;
 
@@ -72,6 +73,7 @@ ServerMediaSession* DynamicRTSPServer
       sms = NULL;
     }
 
+    // 生成ServerMediaSession
     if (sms == NULL) {
       sms = createNewSMS(envir(), streamName, fid);
       addServerMediaSession(sms);

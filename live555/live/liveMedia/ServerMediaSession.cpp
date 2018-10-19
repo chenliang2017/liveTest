@@ -307,7 +307,7 @@ char* ServerMediaSession::generateSDPDescription() {
       sdpLength -= mediaSDPLength;
       if (sdpLength <= 1) break; // the SDP has somehow become too long
 
-      char const* sdpLines = subsession->sdpLines();
+      char const* sdpLines = subsession->sdpLines();    //获取每个子会话的sdp信息
       if (sdpLines != NULL) snprintf(mediaSDP, sdpLength, "%s", sdpLines);
     }
   } while (0);

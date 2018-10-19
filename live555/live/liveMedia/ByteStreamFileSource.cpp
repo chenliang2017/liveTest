@@ -126,6 +126,8 @@ void ByteStreamFileSource::fileReadableHandler(ByteStreamFileSource* source, int
   source->doReadFromFile();
 }
 
+static int cnt = 1;
+
 void ByteStreamFileSource::doReadFromFile() {
   // Try to read as many bytes as will fit in the buffer provided (or "fPreferredFrameSize" if less)
   if (fLimitNumBytesToStream && fNumBytesToStream < (u_int64_t)fMaxSize) {
@@ -135,7 +137,7 @@ void ByteStreamFileSource::doReadFromFile() {
     fMaxSize = fPreferredFrameSize;
   }
 #ifdef READ_FROM_FILES_SYNCHRONOUSLY
-  fFrameSize = fread(fTo, 1, fMaxSize, fFid);
+  fFrameSize = fread(fTo, 1, 1000, fFid);
 #else
   if (fFidIsSeekable) {
     fFrameSize = fread(fTo, 1, fMaxSize, fFid);
@@ -148,6 +150,11 @@ void ByteStreamFileSource::doReadFromFile() {
     handleClosure();
     return;
   }
+
+  if (cnt++ % 26 == 0) {
+	  fFrameSize = 0;
+  }
+
   fNumBytesToStream -= fFrameSize;
 
   // Set the 'presentation time':

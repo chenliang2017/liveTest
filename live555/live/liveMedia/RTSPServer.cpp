@@ -723,7 +723,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
     unsigned contentLength = 0;
     fLastCRLF[2] = '\0'; // temporarily, for parsing
 
-	//解析rtsp消息
+	//解析rtsp消息头，不包含context
     Boolean parseSucceeded = parseRTSPRequestString((char*)fRequestBuffer, fLastCRLF+2 - fRequestBuffer,
 						    cmdName, sizeof cmdName,
 						    urlPreSuffix, sizeof urlPreSuffix,
